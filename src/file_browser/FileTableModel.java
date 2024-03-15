@@ -58,6 +58,10 @@ public class FileTableModel extends AbstractTableModel {
         return "";
     }
 
+    public File getFileNode(int row) {
+        return files[row];
+    }
+
     /**
      * @href https://www.baeldung.com/java-comparator-comparable
      * @param files

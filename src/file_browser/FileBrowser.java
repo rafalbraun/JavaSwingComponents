@@ -23,7 +23,7 @@ public class FileBrowser {
         JFrame frame = new JFrame("FileBrowser");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(fileManager);
-        frame.setPreferredSize(new Dimension(960, 980));
+        frame.setPreferredSize(new Dimension(960, 400));
         frame.pack();
         frame.setVisible(true);
     }
