@@ -111,6 +111,20 @@ public class FileManagerLazy extends JPanel {
                     while (children.hasMoreElements()) {
                         DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
                         System.out.println(childNode.getUserObject());
+
+                        if (childNode.getUserObject().toString().equals(filePath)) {
+                            System.out.println("EQUAL");
+                        }
+
+                        TreeNode[] originalNodes = finalNode.getPath();
+
+                        // Create a new array with a larger size
+                        TreeNode[] updatedNodes = new TreeNode[originalNodes.length + 1];
+                        System.arraycopy(originalNodes, 0, updatedNodes, 0, originalNodes.length);
+                        updatedNodes[originalNodes.length] = childNode;
+
+                        TreeSelectionEvent event2 = new TreeSelectionEvent(table, new TreePath(updatedNodes), false, null, null);
+                        treeSelectionListener.valueChanged(event2);
                     }
 
 
