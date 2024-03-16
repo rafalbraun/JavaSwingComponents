@@ -79,6 +79,55 @@ public class FileManagerLazy extends JPanel {
 
         //Add the split pane to this panel.
         add(splitPane);
+
+        table.addMouseListener(new MouseAdapter() {
+                                   @Override
+                                   public void mouseClicked(MouseEvent e) {
+
+                                       int selectedRow = table.getSelectedRow();
+                                       File file = model.getFileNode(selectedRow);
+
+                                       if (file.isDirectory()) {
+                                           String filePath = file.getAbsolutePath();
+
+                                           if (selectedRow != -1) {
+                                               if (e.getClickCount() == 2) {
+                                                   // expand parent (if closed)
+                                                   TreePath treePath = tree.getSelectionPath();
+                                                   tree.expandPath(treePath);
+
+                                                   DefaultMutableTreeNode finalNode = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+                                                   Enumeration<?> children = finalNode.children();
+                                                   while (children.hasMoreElements()) {
+                                                       DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
+                                                       if (childNode.getUserObject().toString().equals(filePath)) {
+
+                                                           System.out.println("-----------------");
+                                                           System.out.println(file);
+                                                           System.out.println(finalNode);
+                                                           System.out.println(finalNode.getChildCount());
+
+                                                           TreeNode[] originalNodes = finalNode.getPath();
+                                                           TreeNode[] updatedNodes = new TreeNode[originalNodes.length + 1];
+                                                           System.arraycopy(originalNodes, 0, updatedNodes, 0, originalNodes.length);
+                                                           updatedNodes[originalNodes.length] = childNode;
+                                                           TreePath updatedTreePath = new TreePath(updatedNodes);
+                                                           tree.expandPath(updatedTreePath);
+
+                                                           System.out.println(updatedTreePath);
+
+                                                           tree.setSelectionPath(updatedTreePath);
+                                                           tree.scrollPathToVisible(updatedTreePath);
+
+                                                           setTableData(file.listFiles());
+                                                       }
+                                                   }
+                                               }
+                                           }
+                                       }
+                                   }
+                              });
+
 /*
         table.addMouseListener(new MouseAdapter() {
             @Override
@@ -145,6 +194,7 @@ public class FileManagerLazy extends JPanel {
 
     /////////////////////////////////////
 
+    /** this is for eager system file
     private DefaultMutableTreeNode createFilesystemNodesEager(Path path) {
         return loadNodes(path);
     }
@@ -167,7 +217,7 @@ public class FileManagerLazy extends JPanel {
             }
         }
         return top;
-    }
+    }*/
 
     /**
      * Add the files that are contained within the directory of this node.
