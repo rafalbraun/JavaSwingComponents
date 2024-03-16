@@ -32,9 +32,9 @@ public class FileManagerLazy extends JPanel {
     private final JTree tree;
     private FileTableModel model;
 
-    private CustomTreeExpansionListener treeExpansionListener = new CustomTreeExpansionListener();
-    private CustomTreeSelectionListener treeSelectionListener = new CustomTreeSelectionListener();
-    private DefaultMutableTreeNode currentNode;
+    private final CustomTreeExpansionListener treeExpansionListener = new CustomTreeExpansionListener();
+    private final CustomTreeSelectionListener treeSelectionListener = new CustomTreeSelectionListener();
+    //private DefaultMutableTreeNode currentNode;
 
     private final int rowIconPadding = 6;
 
@@ -62,102 +62,72 @@ public class FileManagerLazy extends JPanel {
         table.setShowVerticalLines(false);
         JScrollPane tableScroll = new JScrollPane(table);
 
+        JToolBar toolBar = new JToolBar();
+        toolBar.add(new JButton("Home"));
+        toolBar.add(new JButton("Up"));
+        toolBar.add(new JTextField()); // add "on enter" listener
+
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.add(tableScroll, BorderLayout.CENTER);
+        tablePanel.add(toolBar, BorderLayout.NORTH);
+
         //Add the scroll panes to a split pane.
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setTopComponent(treeView);
-        splitPane.setBottomComponent(tableScroll);
+        splitPane.setBottomComponent(tablePanel);
         splitPane.setDividerLocation(350);
 
         //Add the split pane to this panel.
         add(splitPane);
-
+/*
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int selectedRow = table.getSelectedRow();
                 if (selectedRow != -1) {
-                    //Object rowData = model.getValueAt(selectedRow, 0); // Assuming the object is in the first column
-                    //System.out.println("Object associated with row " + selectedRow + ": " + rowData);
+                    if (e.getClickCount() == 2) {
+                        File file = model.getFileNode(selectedRow);
+                        if(file.isDirectory()) {
+                            String filePath = file.getAbsolutePath();
 
-                    File file = model.getFileNode(selectedRow);
-                    String filePath = file.getAbsolutePath();
+                            TreePath treePath = tree.getSelectionPath();
+                            if (treePath == null) {
+                                return;
+                            }
 
-//                    String[] pathNodes = {"/home/vanqyard"};
-//                    TreePath treePath = getTreePathFromNames(tree, pathNodes);
-//                    tree.setSelectionPath(treePath);
+                            TreeExpansionEvent event = new TreeExpansionEvent(table, treePath);
+                            treeExpansionListener.treeWillExpand(event);
+                            tree.expandPath(treePath);
 
-//                    TreeNode root = (TreeNode) tree.getModel().getRoot();
-//                    TreeNode[] nodes = {root, root.getChildAt(2)};
-//                    TreePath treePath = new TreePath(nodes);
+                            DefaultMutableTreeNode finalNode = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+                            Enumeration<?> children = finalNode.children();
+                            while (children.hasMoreElements()) {
+                                DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
+                                System.out.println(childNode.getUserObject());
 
-                    TreePath treePath = tree.getSelectionPath();
-                    //DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+                                if (childNode.getUserObject().toString().equals(filePath)) {
+                                    System.out.println("EQUAL");
 
-//                    for (int i = 0; i < root.getChildCount(); i++) {
-//                        TreeNode childNode = root.getChildAt(i);
-//                        System.out.println(childNode);
-//                        System.out.println(childNode.getChildCount());
-//                    }
+                                    TreeNode[] originalNodes = finalNode.getPath();
+                                    TreeNode[] updatedNodes = new TreeNode[originalNodes.length + 1];
+                                    System.arraycopy(originalNodes, 0, updatedNodes, 0, originalNodes.length);
+                                    updatedNodes[originalNodes.length] = childNode;
 
-                    //DefaultMutableTreeNode node = new DefaultMutableTreeNode(file);
-                    TreeExpansionEvent event = new TreeExpansionEvent(table, treePath);
-                    treeExpansionListener.treeWillExpand(event);
-                    tree.expandPath(treePath);
+                                    TreePath updatedTreePath = new TreePath(updatedNodes);
+                                    TreeSelectionEvent event2 = new TreeSelectionEvent(table, updatedTreePath, false, null, null);
+                                    treeSelectionListener.valueChanged(event2);
 
-                    //System.out.println(file.getName());
-
-                    DefaultMutableTreeNode finalNode = (DefaultMutableTreeNode) treePath.getLastPathComponent();
-                    Enumeration<?> children = finalNode.children();
-                    while (children.hasMoreElements()) {
-                        DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) children.nextElement();
-                        System.out.println(childNode.getUserObject());
-
-                        if (childNode.getUserObject().toString().equals(filePath)) {
-                            System.out.println("EQUAL");
+                                    tree.setSelectionPath(updatedTreePath);
+                                    tree.scrollPathToVisible(updatedTreePath);
+                                }
+                            }
                         }
-
-                        TreeNode[] originalNodes = finalNode.getPath();
-
-                        // Create a new array with a larger size
-                        TreeNode[] updatedNodes = new TreeNode[originalNodes.length + 1];
-                        System.arraycopy(originalNodes, 0, updatedNodes, 0, originalNodes.length);
-                        updatedNodes[originalNodes.length] = childNode;
-
-                        TreeSelectionEvent event2 = new TreeSelectionEvent(table, new TreePath(updatedNodes), false, null, null);
-                        treeSelectionListener.valueChanged(event2);
                     }
-
-
-
-//                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
-//
-//                    TreeNode newNode = NodeUtils.findNodeWithValue(node, file.getName());
-//                    System.out.println(node);
-//                    System.out.println(newNode);
-
-                    //System.out.println(root.getChildAt(2).getChildCount());
-                    //System.out.println(node.getChildCount());
-
-                    //tree.expandPath(treePath);
-                    //System.out.println(selectedRow);
-
-
-                    /*
-                    TreeNode newNode = currentNode.getChildAt(selectedRow);
-                    TreeNode[] originalNodes = currentNode.getPath();
-
-                    // Create a new array with a larger size
-                    TreeNode[] updatedNodes = new TreeNode[originalNodes.length + 1];
-                    System.arraycopy(originalNodes, 0, updatedNodes, 0, originalNodes.length);
-                    updatedNodes[originalNodes.length] = newNode;
-
-                    TreeSelectionEvent event2 = new TreeSelectionEvent(table, new TreePath(updatedNodes), false, null, null);
-                    treeSelectionListener.valueChanged(event2);
-                    */
-
                 }
             }
         });
+
+ */
     }
 
 //    private void expandTreeNode(TreePath treePath, TreeNode treeNode) {
@@ -323,8 +293,8 @@ public class FileManagerLazy extends JPanel {
         public void valueChanged(TreeSelectionEvent e) {
             //DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
 
-            currentNode = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
-            showChildren(currentNode);
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
+            showChildren(node);
 
             //File file = (File) node.getUserObject();
             //System.out.println(file.getPath());
